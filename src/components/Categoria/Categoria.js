@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Space, Button, Tooltip } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
-
-const baseUrl = "http://localhost:3000/api/categoria";
+import { baseUrl } from '../../API/API';
 
 function Categoria(){
 
@@ -37,7 +36,7 @@ function Categoria(){
   ];
 
   const peticionGet = async() =>{
-    await axios.get(baseUrl)
+    await axios.get(`${baseUrl}/categoria`)
     .then(response =>{
       setData(response.data);
     }).catch(error=>{

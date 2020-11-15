@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Space, Button, Tooltip, message, Modal, Form, Input } from 'antd';
+import { Table, Space, Button, Tooltip, message, Modal, Form, Input, Select } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { baseUrl } from '../../API/API';
-import Axios from 'axios';
+import { 
+  obtenerProductoGet, 
+  obtenerProductoPorId, 
+  obtenerCategoriasGet,
+  obtenerProveedoresGet 
+} from './Service';
+import lodash from 'lodash';
 
 const layout={
   labelCol:{
-    span:8
+    span:10
   },
   wrapperCol:{
     span :16
   }
 }
 
+const { Option } = Select;
+
 function Productos(){
   
-  const [ data, setData ] = useState([]);
+  const [ productosTabla, setProductosTabla ] = useState([]);
   const [ estadoModalEditar, setestadoModalEditar ] = useState({
     visible: false,
-    producto: null,
+    producto: undefined,
+    categorias: undefined,
+    proveedores: undefined
   });
 
   const columns = [
@@ -90,7 +99,25 @@ function Productos(){
       render: (text, record) => (
         <Space size="middle">
           <Tooltip title='Editar'>
-            <Button type='primary' onClick={()=>obtenerProductoPorId(record.IdProducto)}><EditOutlined/></Button>
+            <Button 
+              type='primary' 
+              onClick={ async () => {
+                await Promise.all([
+                  obtenerProductoPorId(record.IdProducto),
+                  obtenerCategoriasGet(),
+                  obtenerProveedoresGet()
+                ]).then(responses => {
+                  setestadoModalEditar({
+                    visible: true, 
+                    producto: responses[0].data, 
+                    categorias: responses[1].data,
+                    proveedores: responses[2].data
+                  })
+                }).catch(error => message.error(error.toString()))
+             }}
+            >
+              <EditOutlined/>
+            </Button>
           </Tooltip>
           <Tooltip title='Eliminar'>
            <Button danger><DeleteOutlined /></Button>
@@ -100,49 +127,78 @@ function Productos(){
     },
   ];
 
-  const obtenerProductoGet = async() =>{
-    await Axios.get(baseUrl+"/producto")
-    .then(response=>{
-      setData(response.data);
-    }).catch(error=>{
+  const obtenerProductos = async() =>{
+    try {
+      const response = await obtenerProductoGet();
+      if (response.data){
+        setProductosTabla(response.data)
+      }
+    } catch (error) {
       message.error(error.toString());
-    })
+    }
+  }
+
+  const formFinish = (values) =>{
+    console.log(values);
   }
 
   useEffect(() =>{
-    obtenerProductoGet();
+    obtenerProductos();
   },[])
 
-  const obtenerProductoPorId = async(IdProducto) =>{
-    await Axios.get(baseUrl+"/producto/"+IdProducto)
-    .then(response=>{
-      console.log(response)
-      setestadoModalEditar({visible: true, producto: response.data});
-    }).catch(error=>{
-      message.error(error.toString());
-    })
+  const validarNumero = (rule, value) => {
+    if(typeof value === 'number' && value > 0) {
+      return Promise.resolve();
+    }
+    return Promise.reject('Ingrese un numero valido')
   }
 
   return(
     <div>
-      <Table rowKey="IdProducto" columns={columns} dataSource={data}/>
+      <Table rowKey="IdProducto" columns={columns} dataSource={productosTabla}/>
       <Modal
         visible={estadoModalEditar.visible}
         title="Editar Producto"
-        onCancel={() => setestadoModalEditar({visible: false, producto: null})}
+        onCancel={() => setestadoModalEditar({visible: false, producto: null, categorias: null} )}
+        footer={[
+          <Button key='1'>Cancelar</Button>,
+          <Button key='2' type='primary' htmlType="submit" form="formularioProductoEditar" >Guardar</Button>
+        ]}
         >
-        { estadoModalEditar.producto != undefined ? <Form {...layout}>
+        { estadoModalEditar.visible === true ? <Form 
+          id="formularioProductoEditar"
+          {...layout}
+          onFinish={(values) => formFinish(values)}
+        >
           <Form.Item
-          initialValue = {estadoModalEditar.producto.NombreProducto}
-          name="NombreProducto"
-          label = "Nombre del Producto">
+            initialValue = {estadoModalEditar.producto.NombreProducto}
+            name="NombreProducto"
+            label = "Nombre del Producto"
+            required tooltip="Este es un campo requerido"
+            rules={[
+              {required: true, message: 'Por favor ingrese un nombre!'}
+            ]}
+          >
             <Input/>
           </Form.Item>
 
           <Form.Item 
-          initialValue = {estadoModalEditar.producto.PrecioVenta}
-          name="PrecioVenta"
-          label = "Precio">
+            initialValue = {estadoModalEditar.producto.PrecioVenta}
+            name="PrecioVenta"
+            label = "Precio"
+            required tooltip="Este es un campo requerido"
+            rules={[
+              { required: true, message: 'Por favor ingrese un precio!' },
+              ({ getFieldValue }) => ({
+                validator(rule, value) {
+                  if(lodash.isNumber(value)){
+                    return Promise.resolve();
+                  }
+                  return Promise.reject('Ingresa un numero valido!');
+                },
+              }),
+            ]}
+          >
             <Input/>
           </Form.Item>
 
@@ -154,24 +210,45 @@ function Productos(){
           </Form.Item>
 
           <Form.Item 
-          initialValue = {estadoModalEditar.producto.Tamanio}
-          name="Tamanio"
-          label = "Tamaño">
+            initialValue = {estadoModalEditar.producto.Tamanio}
+            name="Tamanio"
+            label = "Tamaño"
+            required tooltip="Este es un campo requerido"
+            rules={[
+              {required: true, message: 'Por favor ingrese un tamaño!'}
+            ]}
+          >
             <Input/>
           </Form.Item>
-
           <Form.Item 
-          initialValue = {estadoModalEditar.producto.ProveeProductos[0].Proveedor.NombreProveedor}
-          name="NombreProveedor"
-          label = "Nombre del Proveedor">
-            <Input/>
+            initialValue = {estadoModalEditar.producto.Categoria.IdCategoria}
+            name="categoria"
+            label = "Categoria"
+            required tooltip="Este es un campo requerido"
+            rules={[
+              {required: true}
+            ]}
+          >
+            <Select style={{ width: 120 }}>
+              { estadoModalEditar.categorias.map((cat,index) =>{
+                return <Option key={index} value={cat.IdCategoria}>{cat.NombreCategoria}</Option>
+              })}
+            </Select>
           </Form.Item>
-
-          <Form.Item 
-          initialValue = {estadoModalEditar.producto.Categoria.NombreCategoria}
-          name="categoria"
-          label = "Categoria">
-            <Input/>
+          <Form.Item
+            initialValue={estadoModalEditar.producto.ProveeProductos[0].Proveedor.IdProveedor}
+            name="proveedor"
+            label = "Proveedor"
+            required tooltip="Este es un campo requerido"
+            rules={[
+              {required: true}
+            ]}
+          >
+            <Select style={{ width: 120 }}>
+              { estadoModalEditar.proveedores.map((cat,index) =>{
+                return <Option key={index} value={cat.IdProveedor}>{cat.NombreProveedor}</Option>
+              })}
+            </Select>
           </Form.Item>
 
           </Form> : <div>Cargando</div>}
