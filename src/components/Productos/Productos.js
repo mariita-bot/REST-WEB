@@ -8,6 +8,8 @@ import {
   obtenerProveedoresGet 
 } from './Service';
 
+import VentanaAgregarProductos from './AgregarProducto';
+
 const layout={
   labelCol:{
     span:10
@@ -76,7 +78,7 @@ function Productos(){
       render: (text, record) =>{
         return(
           <div>
-            {record.Categoria.NombreCategoria}
+            {record.Categoria?.NombreCategoria}
           </div>
         )
       }
@@ -87,7 +89,7 @@ function Productos(){
       render: (_, record) =>{
         return(
           <div>
-            {record.ProveeProductos[0].Proveedor.NombreProveedor}
+            {record.ProveeProductos[0]?.Proveedor?.NombreProveedor}
           </div>
         )
       }
@@ -129,7 +131,9 @@ function Productos(){
   const obtenerProductos = async() =>{
     try {
       const response = await obtenerProductoGet();
+      console.log(response);
       if (response.data){
+
         setProductosTabla(response.data)
       }
     } catch (error) {
@@ -147,6 +151,7 @@ function Productos(){
 
   return(
     <div>
+      <VentanaAgregarProductos actualizarProductos={obtenerProductos}> </VentanaAgregarProductos>
       <Table rowKey="IdProducto" columns={columns} dataSource={productosTabla}/>
       <Modal
         visible={estadoModalEditar.visible}

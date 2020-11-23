@@ -8,3 +8,7 @@ export function obtenerCategoriaGet() {
 export function obtenerCategoriaPorId(IdCategoria) {
   return Axios.get(`${baseUrl}/categoria/${IdCategoria}`);
 }
+
+export function insertarCategoriaPost (Categoria) {
+  return Axios.post(`${baseUrl}/categoria`, Categoria )
+}

@@ -16,3 +16,12 @@ export function obtenerCategoriasGet() {
 export function obtenerProveedoresGet() {
   return Axios.get(`${baseUrl}/proveedor`)
 }
+
+
+export function insertarProductoPost(Producto) {
+  return Axios.post(`${baseUrl}/producto`,Producto )
+}
+
+export function editarProductoPut() {
+//
+}

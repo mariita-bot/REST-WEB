@@ -15,6 +15,8 @@ import {
   obtenerCategoriaGet
 } from './Service';
 
+import VentanaAgregarCategoria from './AgregarCategoria';
+
 const layout={
   labelCol:{
     span:10
@@ -31,6 +33,8 @@ function Categoria(){
     visible: false,
     categoria: undefined,
   });
+
+  const [tablaCargando , setTablaCargando ] = useState(false);
 
   const columns = [
     {
@@ -75,12 +79,15 @@ function Categoria(){
   ];
 
   const obtenerCategorias = async() =>{
+    setTablaCargando (true);
     try {
       const response = await obtenerCategoriaGet();
       if (response.data){
+        setTablaCargando(false);
         setCategoriaTabla(response.data)
       }
     } catch (error) {
+      setTablaCargando(false);
       message.error(error.toString());
       
     }
@@ -95,8 +102,9 @@ function Categoria(){
   },[])
 
   return(
-    <>  
-    <Table rowKey="IdCategoria" columns={columns} dataSource={categoriaTabla}/>
+    <>
+    <VentanaAgregarCategoria actualizarCategorias={obtenerCategorias} ></VentanaAgregarCategoria>  
+    <Table loading={tablaCargando} rowKey="IdCategoria" columns={columns} dataSource={categoriaTabla}/>
     <Modal
       visible={estadoModalEditar.visible}
       title="Editar Categoria"

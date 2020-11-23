@@ -10,7 +10,7 @@ function Mesas() {
     try {
       const response = await obtenerMesasGet();
       if (response.data){
-        console.log(response.data)
+        //console.log(response.data)
         setMesaGrid(response.data)
       }
     } catch (error) {
