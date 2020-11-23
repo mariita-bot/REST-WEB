@@ -7,7 +7,6 @@ import {
   obtenerCategoriasGet,
   obtenerProveedoresGet 
 } from './Service';
-import lodash from 'lodash';
 
 const layout={
   labelCol:{
@@ -59,7 +58,7 @@ function Productos(){
     {
       title: 'Stock',
       key: 'stock',
-      render: (text, record) => {
+      render: (_, record) => {
         let cantidad = 0;
         record.ProveeProductos.forEach(element => {
           cantidad += element.Cantidad;
@@ -146,23 +145,17 @@ function Productos(){
     obtenerProductos();
   },[])
 
-  const validarNumero = (rule, value) => {
-    if(typeof value === 'number' && value > 0) {
-      return Promise.resolve();
-    }
-    return Promise.reject('Ingrese un numero valido')
-  }
-
   return(
     <div>
       <Table rowKey="IdProducto" columns={columns} dataSource={productosTabla}/>
       <Modal
         visible={estadoModalEditar.visible}
         title="Editar Producto"
+        maskClosable={false}
         onCancel={() => setestadoModalEditar({visible: false, producto: null, categorias: null} )}
         footer={[
           <Button key='1'>Cancelar</Button>,
-          <Button key='2' type='primary' htmlType="submit" form="formularioProductoEditar" >Guardar</Button>
+          <Button key='2' type='primary' htmlType="submit" form="formularioProductoEditar">Guardar</Button>
         ]}
         >
         { estadoModalEditar.visible === true ? <Form 
@@ -171,7 +164,7 @@ function Productos(){
           onFinish={(values) => formFinish(values)}
         >
           <Form.Item
-            initialValue = {estadoModalEditar.producto.NombreProducto}
+            initialValue={estadoModalEditar.producto.NombreProducto}
             name="NombreProducto"
             label = "Nombre del Producto"
             required tooltip="Este es un campo requerido"
@@ -188,15 +181,7 @@ function Productos(){
             label = "Precio"
             required tooltip="Este es un campo requerido"
             rules={[
-              { required: true, message: 'Por favor ingrese un precio!' },
-              ({ getFieldValue }) => ({
-                validator(rule, value) {
-                  if(lodash.isNumber(value)){
-                    return Promise.resolve();
-                  }
-                  return Promise.reject('Ingresa un numero valido!');
-                },
-              }),
+              { required: true, message: 'Por favor ingrese un precio!', pattern: /^[1-9]+$/ }
             ]}
           >
             <Input/>

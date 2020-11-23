@@ -1,12 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Space, Button, Tooltip } from 'antd';
+import { 
+  Table, 
+  Space, 
+  Button, 
+  Tooltip, 
+  message, 
+  Input,
+  Form,
+  Modal 
+} from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import axios from 'axios';
-import { baseUrl } from '../../API/API';
+import { 
+  obtenerCategoriaPorId, 
+  obtenerCategoriaGet
+} from './Service';
+
+const layout={
+  labelCol:{
+    span:10
+  },
+  wrapperCol:{
+    span :16
+  }
+}
 
 function Categoria(){
 
-  const [data, setData] = useState([]);
+  const [ categoriaTabla, setCategoriaTabla] = useState([]);
+  const [ estadoModalEditar, setEstadoModalEditar ] = useState({
+    visible: false,
+    categoria: undefined,
+  });
 
   const columns = [
     {
@@ -22,10 +46,25 @@ function Categoria(){
     {
       title: 'Accion',
       key: 'accion',
-      render: () => (
+      render: (text, record) => (
         <Space size="middle">
           <Tooltip title='Editar'>
-            <Button type='primary'><EditOutlined/></Button>
+            <Button 
+              type='primary'
+              onClick={ async () => {
+                await Promise.all([
+                  obtenerCategoriaPorId(record.IdCategoria),
+                  obtenerCategoriaGet()
+                ]).then(responses => {
+                  setEstadoModalEditar({
+                    visible: true,
+                    categoria: responses[0].data
+                  })
+                }).catch(error => message.error(error.toString()))
+              }}
+            >
+              <EditOutlined/>
+            </Button>
           </Tooltip>
           <Tooltip title='Eliminar'>
            <Button danger><DeleteOutlined /></Button>
@@ -35,23 +74,58 @@ function Categoria(){
     },
   ];
 
-  const peticionGet = async() =>{
-    await axios.get(`${baseUrl}/categoria`)
-    .then(response =>{
-      setData(response.data);
-    }).catch(error=>{
-      console.log(error);
-    });
+  const obtenerCategorias = async() =>{
+    try {
+      const response = await obtenerCategoriaGet();
+      if (response.data){
+        setCategoriaTabla(response.data)
+      }
+    } catch (error) {
+      message.error(error.toString());
+      
+    }
+  }
+
+  const formFinish = (values) =>{
+    console.log(values);
   }
 
   useEffect(() =>{
-    peticionGet();
+    obtenerCategorias();
   },[])
 
   return(
     <>  
-    <Table rowKey="IdCategoria" columns={columns} dataSource={data}/>
-    </>
+    <Table rowKey="IdCategoria" columns={columns} dataSource={categoriaTabla}/>
+    <Modal
+      visible={estadoModalEditar.visible}
+      title="Editar Categoria"
+      maskClosable={false}
+      onCancel={() => setEstadoModalEditar({visible: false, categoria: null})}
+      footer={[
+        <Button key='1'>Cancelar</Button>,
+        <Button key='2' type='primary' htmlType="formularioCategoriaEditar">Guardar</Button>
+      ]}
+    >
+    { estadoModalEditar.visible === true ? <Form 
+      id="formularioCategoriaEditar" 
+      {...layout}
+      onFinish={(values) => formFinish(values)}
+    >
+      <Form.Item
+        inicalValue = {setEstadoModalEditar.categoria} 
+        name="NombreCategoria"
+        label="Nombre de la categoria"
+        required tooltip="Este es un campo requerido"
+        rules={[
+          {requiered: true}
+        ]}
+      >
+        <Input/>
+      </Form.Item>
+      </Form> : <div>Cargando</div>}
+    </Modal>
+   </>
   );
 };
 

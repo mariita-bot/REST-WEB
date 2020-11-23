@@ -25,6 +25,7 @@ import Proveedor from '../Proveedor/Proveedor';
 import Categoria from '../Categoria/Categoria';
 import Mesero from '../Mesero/Mesero';
 import Ventas from '../Ventas/Ventas';
+import Mesas from '../Mesas/Mesas';
 import './Layout.css';
 
 
@@ -64,8 +65,8 @@ function MainLayout(props) {
         <div className="logo" />
         <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
           <Menu.Item key="1" icon={<UserOutlined />}>
-            <Link to="/dashboard/pedidos" style={{ padding: 5 }}>
-              Pedidos
+            <Link to="/dashboard/mesas" style={{ padding: 5 }}>
+              Mesas
             </Link>
           </Menu.Item>
           <Menu.Item key="2" icon={<UserOutlined />}>
@@ -74,26 +75,31 @@ function MainLayout(props) {
             </Link>
           </Menu.Item>
           <Menu.Item key="3" icon={<UserOutlined />}>
+            <Link to="/dashboard/pedidos" style={{ padding: 5 }}>
+              Pedidos
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="4" icon={<UserOutlined />}>
             <Link to="/dashboard/proveedor" style={{ padding: 5 }}>
               Proveedor
             </Link>
           </Menu.Item>
-          <Menu.Item key="4" icon={<UserOutlined />}>
+          <Menu.Item key="5" icon={<UserOutlined />}>
             <Link to="/dashboard/categoria" style={{ padding: 5 }}>
               Categoria
             </Link>
           </Menu.Item>
-          <Menu.Item key="5" icon={<UserOutlined />}>
+          <Menu.Item key="6" icon={<UserOutlined />}>
             <Link to="/dashboard/mesero" style={{ padding: 5 }}>
               Mesero
             </Link>
           </Menu.Item>
-          <Menu.Item key="6" icon={<VideoCameraOutlined />}>
+          <Menu.Item key="7" icon={<VideoCameraOutlined />}>
             <Link to="/dashboard/ventas" style={{ padding: 5 }}>
               Ventas
             </Link>
           </Menu.Item>
-          <Menu.Item onClick={salir} key="7" icon={<UploadOutlined />}>
+          <Menu.Item onClick={salir} key="8" icon={<UploadOutlined />}>
             Salir
           </Menu.Item>
         </Menu>
@@ -113,7 +119,8 @@ function MainLayout(props) {
             padding: 24,
             minHeight: 280,
           }}>
-            <Route exact path="/dashboard/*">{ <Redirect to="/dashboard/pedidos" />}</Route>
+            <Route exact path="/dashboard/*">{ <Redirect to="/dashboard/mesas" />}</Route>
+            <Route exact path="/dashboard/mesas" component={Mesas}/>
             <Route exact path="/dashboard/pedidos" component={Pedidos} />
             <Route exact path="/dashboard/productos" component={Productos} />
             <Route exact path="/dashboard/proveedor" component={Proveedor} />
