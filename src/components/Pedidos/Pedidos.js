@@ -151,7 +151,7 @@ function Pedidos(){
   
   return(
     <div>
-      <VentanaAgregarPedido></VentanaAgregarPedido>
+      <VentanaAgregarPedido obtenerPedidos={obtenerPedidos}></VentanaAgregarPedido>
       <Table columns={columns} dataSource={pedidoTabla}/>
 
     </div>
