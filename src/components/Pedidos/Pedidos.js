@@ -1,81 +1,113 @@
-import React from 'react';
-import { Table, Tag, Space, Button, Tooltip } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { 
+  Table, 
+  Space, 
+  Button, 
+  Tooltip, 
+  message, 
+  Input,
+  Form,
+  Modal 
+} from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { baseUrl } from '../../API/API';
+import { 
+  obtenerCategoriaPorId, 
+  obtenerCategoriaGet,
+  borrarCategoriaDelete,
+  editarCategoriaPut,
+  obtenerPedidosGet
+} from './Service';
+
+import openNotification from '../Extra/Notification';
+import VentanaAgregarPedido from './AgregarPedido';
+
+const layout={
+  labelCol:{
+    span:10
+  },
+  wrapperCol:{
+    span :16
+  }
+}
+
 
 function Pedidos(){
+
+  const [ pedidoTabla, setPedidoTabla] = useState([]);
+  const [ estadoModalEditar, setEstadoModalEditar ] = useState({
+    visible: false,
+    pedido: undefined,
+  });
+
+
+  
+  const obtenerPedidos = async() =>{
+    //console.log("im here");
+    try {
+      setTablaCargando (true);
+      const response = await obtenerPedidosGet();
+
+      if (response.data){
+
+        console.log(response.data);
+
+        setPedidoTabla(response.data)
+        setTablaCargando(false);
+      }
+    } catch (error) {
+      setTablaCargando(false);
+      message.error(error.toString());
+      
+    }
+  }
+
+  useEffect(() =>{
+    obtenerPedidos();
+  },[])
+
+  const [tablaCargando , setTablaCargando ] = useState(false);
+
   
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id',
+      dataIndex: 'IdPedido',
       key: 'id',
       render: text => <a>{text}</a>,
     },
     {
       title: 'Estado',
-      dataIndex: 'estado',
+      dataIndex: 'Estado',
       key: 'estado',
     },
     {
+      title: 'Nombre cliente',
+      dataIndex: ['Cliente','NombreCliente'],
+      key: 'idPedido'
+    },
+    {
       title: 'Observacion',
-      dataIndex: 'observacion',
+      dataIndex: 'Observacion',
       key: 'observacion',
     },
     {
       title: 'Numero de mesa',
-      dataIndex: 'numerodemesa',
-      key: 'numerodemesa',
+      dataIndex: 'MesaNumero',
     },
     {
       title: 'Mesero',
-      dataIndex: 'mesero',
+      dataIndex: ['Empleado','NombreEmpleado'],
       key: 'mesero',
-    },
-    {
-      title: 'Accion',
-      key: 'accion',
-      render: (text, record) => (
-        <Space size="middle">
-          <Tooltip title='Editar'>
-            <Button type='primary'><EditOutlined/></Button>
-          </Tooltip>
-          <Tooltip title='Eliminar'>
-           <Button danger><DeleteOutlined /></Button>
-          </Tooltip>
-        </Space>
-      ),
     },
   ];
 
-  const data = [
-    {
-      key: '1',
-      id: '1',
-      estado: 'En proceso',
-      observacion: 'Cubiertos extras',
-      numerodemesa: '1',
-      mesero: 'Juan Ramirez'
-    },
-    {
-      key: '2',
-      id: '2',
-      estado: 'Recibida',
-      observacion: 'Cubiertos extras',
-      numerodemesa: '2',
-      mesero: 'Juan Ramirez'
-    },
-    {
-      key: '3',
-      id: '3',
-      estado: 'En proceso',
-      observacion: 'Cubiertos extras',
-      numerodemesa: '3',
-      mesero: 'Juan Ramirez'
-    },
-  ];
+  
   return(
-    <Table columns={columns} dataSource={data}/>
+    <div>
+      <VentanaAgregarPedido></VentanaAgregarPedido>
+      <Table columns={columns} dataSource={pedidoTabla}/>
+
+    </div>
   );
 };
 
