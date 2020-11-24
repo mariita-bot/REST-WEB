@@ -40,9 +40,19 @@ function VentanaAgregarPedido(props){
 
   const [ meserosLista , setMeserosLista ] = useState ([]);
 
+  const [ productoSelected , setProductoSelected ] = useState ({});
+
+  const [ cantidadProductoSelected , setCantidadProductoSelected ] = useState (1);
+
   const [ productosLista , setProductosLista ] = useState ([]);
 
   const [ mesasLista , setMesasLista ] = useState ([]);
+
+  const [subtotal, setSubtotal ] = useState (0);
+
+  const [iva , setIva ] = useState(0);
+
+  const [total, setTotal ] = useState (0);
 
   const [valoresPedidoNuevo, setValoresPedidoNuevo] = useState({
     NombreCategoria : "",
@@ -59,24 +69,44 @@ function VentanaAgregarPedido(props){
 
   function handleCancel (e) {
     setestadoModalAgregar({visible: false})
+    setProductosTabla([]);
+    setCantidadProductoSelected(0);
   };
+
+  function calculateTotal () {
+
+    var subtotal = 0;
+
+    productosTabla.forEach(element => {
+      subtotal = subtotal + (element.PrecioVenta * element.Cantidad) ;
+    });
+
+    setSubtotal (subtotal);
+
+    setIva (subtotal * 0.15);
+
+    setTotal ( subtotal + (subtotal * 0.15) );
+
+
+  }
 
   const columnsProducts = [
     {
       title: 'ID',
-      dataIndex: 'idProducto',
-      key: 'id',
+      dataIndex: 'IdProducto',
       render: text => <a>{text}</a>,
     },
     {
       title: 'Nombre Producto',
-      dataIndex: 'estado',
-      key: 'estado',
+      dataIndex: 'NombreProducto',
     },
     {
       title: 'Cantidad',
-      dataIndex: 'observacion',
-      key: 'observacion',
+      dataIndex: 'Cantidad',
+    },
+    {
+      title: 'Precio x unidad',
+      dataIndex: 'PrecioVenta'
     },
     {
       title: 'Accion',
@@ -84,13 +114,23 @@ function VentanaAgregarPedido(props){
       render: (text, record) => (
         <Space size="middle">
           <Tooltip title='Eliminar'>
-           <Button danger><DeleteOutlined /></Button>
+           <Button onClick={ () => { borrarDeTablaProducto(record) } } danger><DeleteOutlined /></Button>
           </Tooltip>
         </Space>
       ),
     },
   ];
 
+  useEffect(() => {
+    
+    calculateTotal();
+  }, [productosTabla]);
+
+
+  function borrarDeTablaProducto (product) {
+    setProductosTabla(productosTabla.filter(item => item.IdProducto !== product.IdProducto ));
+    //calculateTotal();
+  }
 
   async function llenarDatos () { 
 
@@ -115,6 +155,8 @@ function VentanaAgregarPedido(props){
 
   async function formFinish (values) {
     console.log(values);
+
+    values.productos = productosTabla;
 
     await Promise.all([
       insertarPedidoPost ( values),
@@ -174,6 +216,49 @@ function VentanaAgregarPedido(props){
     setValoresPedidoNuevo(prevState => ({...prevState, NombreCategoria: e.target.value}))
   }
 
+  function handleChangeProductoSelected (value) {
+    setProductoSelected(value);
+  }
+
+  function handleChangeCantidadProductoSelected (value) {
+    setCantidadProductoSelected(value);
+  }
+
+  function handleInsertarProductoSelected () {
+
+    console.log(productoSelected);
+
+    var newValue = new Object();
+    var productoDetalle = productosLista.find( product => product.IdProducto === productoSelected );
+    newValue.IdProducto = productoDetalle.IdProducto;
+    newValue.NombreProducto = productoDetalle.NombreProducto;
+    newValue.Cantidad = cantidadProductoSelected;
+    newValue.PrecioVenta = productoDetalle.PrecioVenta;
+
+    //console.log(newValue);
+
+    if ( productosTabla.find(v => (v.IdProducto === newValue.IdProducto )  ) !== undefined  ) {
+
+      const newClicks = [...productosTabla];
+      
+      const index = productosTabla.findIndex(element => element.IdProducto === newValue.IdProducto);
+
+      const old = newClicks[index];
+      const updated = { ...old }
+      updated.Cantidad = updated.Cantidad + cantidadProductoSelected;
+      const clone = [...productosTabla];
+      clone[index] = updated;
+      setProductosTabla(clone);
+
+    } else {
+      setProductosTabla (productosTabla.concat(newValue));
+
+      console.log("im here creando nuevo");
+    }
+
+    //calculateTotal();
+  }
+
   return (
     <div>
       <Button type="primary" onClick={showModal}>
@@ -209,7 +294,7 @@ function VentanaAgregarPedido(props){
 
             <Form.Item
               name="TelefonoCliente"
-              label="Telefono del Cliente"
+              label="Teléfono del Cliente"
               required tooltip="Este es un campo requerido"
               rules={[
                 {required: true}
@@ -229,17 +314,7 @@ function VentanaAgregarPedido(props){
               <Input/>
             </Form.Item>
 
-            <Form.Item
-              name="CedulaCliente"
-              label="Cedula del Cliente"
-              required tooltip="Este es un campo requerido"
-              rules={[
-                {required: true}
-              ]}
-            >
-              <Input/>
-            </Form.Item>
-
+            
             <Form.Item
               name="Observacion"
               label="Observacion / detalle"
@@ -267,16 +342,34 @@ function VentanaAgregarPedido(props){
               </Select>
             </Form.Item>
 
-            <Form.Item label="Ya pagado?" name="pagado">
+            <Form.Item label="Ya pagado?" name="Pagado">
               < Switch />
             </Form.Item>
 
             <label> Productos </label>
 
+            <Form.Item label="Elegir producto">
+              <Select value={productoSelected.IdProducto} onChange={handleChangeProductoSelected}>
+                {productosLista?.map(function(d, idx){
+                  return (<Select.Option key={d.IdProducto} value={d.IdProducto}>{d.NombreProducto}</Select.Option>)
+                })}
+
+              </Select>
+              
+              <label>Cantidad </label>
+              <InputNumber defaultValue={1} min={1} max={10} value={cantidadProductoSelected} onChange={handleChangeCantidadProductoSelected} />
+                
+              <Button type='primary' onClick={handleInsertarProductoSelected}> Insertar </Button>
+            </Form.Item>
+
             <Table columns={columnsProducts} dataSource={productosTabla} ></Table>
 
             </Form>
-        
+
+          <label> Subtotal : {subtotal.toFixed(2)} </label> <br/>
+          <label> Iva : {iva.toFixed(2)} </label>      <br/>
+          <label>Total : {total.toFixed(2)} </label><br/>
+
           <center>
             <Button type='primary' htmlType="submit" form="formularioPedidoNuevo">Guardar</Button>
           </center>

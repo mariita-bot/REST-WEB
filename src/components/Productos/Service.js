@@ -29,3 +29,7 @@ export function editarProductoPut(IdProducto, Producto) {
 export function borrarProductoDelete (IdProducto) {
   return Axios.delete(`${baseUrl}/producto/${IdProducto}`);
 }
+
+export function obtenerProveedorGet () {
+  return Axios.get(`${baseUrl}/proveedor`);
+}

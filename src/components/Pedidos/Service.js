@@ -11,7 +11,7 @@ export async function insertarPedidoPost(pedido) {
 
 
 export async function obtenerProductosGet() {
-  return await Axios.get(`${baseUrl}/pedido`);
+  return await Axios.get(`${baseUrl}/producto`);
 }
 
 export async function obtenerMeserosGet() {
@@ -20,4 +20,8 @@ export async function obtenerMeserosGet() {
 
 export async function obtenerMesasGet() {
   return await Axios.get(`${baseUrl}/mesa/mesasdisponibles`);
+}
+
+export async function pagarPedidoPost (idPedido) {
+  return await Axios.post(`${baseUrl}/pedido/pagarpedido/`+idPedido  );
 }

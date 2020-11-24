@@ -9,13 +9,14 @@ import {
   Form,
   Modal 
 } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DollarOutlined } from '@ant-design/icons';
 import { 
   obtenerCategoriaPorId, 
   obtenerCategoriaGet,
   borrarCategoriaDelete,
   editarCategoriaPut,
-  obtenerPedidosGet
+  obtenerPedidosGet,
+  pagarPedidoPost
 } from './Service';
 
 import openNotification from '../Extra/Notification';
@@ -65,6 +66,25 @@ function Pedidos(){
     obtenerPedidos();
   },[])
 
+
+  async function pagarPedido (record) {
+
+    setTablaCargando(true);
+
+    await Promise.all([
+      pagarPedidoPost (record.IdPedido)
+    ]).then(responses => {
+      setTablaCargando(false)
+      openNotification("Eliminado", "Pedido pagado correctamente", "success")
+      obtenerPedidos();
+    }).catch(error => {
+      message.error(error.toString() )
+      openNotification("Operación Fallada", "El pedido no fue pagado correctamente, intente nuevamente", "error")
+      setTablaCargando(false)
+    })
+
+  }
+
   const [tablaCargando , setTablaCargando ] = useState(false);
 
   
@@ -79,6 +99,9 @@ function Pedidos(){
       title: 'Estado',
       dataIndex: 'Estado',
       key: 'estado',
+      render: (text, record) => (
+        (text === 0 ? "No Pagado" : "Pagado" )
+      )
     },
     {
       title: 'Nombre cliente',
@@ -98,6 +121,30 @@ function Pedidos(){
       title: 'Mesero',
       dataIndex: ['Empleado','NombreEmpleado'],
       key: 'mesero',
+    },
+    {
+      title: 'Accion',
+      key: 'accion',
+      render: (text, record) => (
+        <Space size="middle">
+
+          { record.Estado === 0 ?  
+
+          <Tooltip title='Pagar'>
+            <Button onClick={ async () => { pagarPedido(record) } } ><DollarOutlined /> </Button>
+          </Tooltip>
+          
+          :
+
+          <Tooltip title='Ya pagado'>
+            <Button onClick={ async () => { pagarPedido(record) } } disabled><DollarOutlined /> </Button>
+          </Tooltip>
+          
+        }
+
+          
+        </Space>
+      ),
     },
   ];
 

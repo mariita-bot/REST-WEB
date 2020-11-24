@@ -6,7 +6,8 @@ import openNotification from '../Extra/Notification';
 
 import { 
   insertarProductoPost,
-  obtenerCategoriasGet
+  obtenerCategoriasGet,
+  obtenerProveedorGet
 } from './Service';
 
 const { Option } = Select;
@@ -19,7 +20,8 @@ function VentanaAgregarProductos(props){
     visible: false,
   });
 
-  const [ listaCategorias , setCategorias ] = useState ([]) 
+  const [ listaCategorias , setCategorias ] = useState ([]) ;
+  const [ listaProveedor , setProveedor ] = useState ([]);
 
   const [valoresProductoNuevo, setValoresProductoNuevo] = useState({
     NombreProducto : "",
@@ -27,13 +29,26 @@ function VentanaAgregarProductos(props){
     Descripcion: "",
     Tamanio : "",
     Estado : true,
-    IdCategoria : 1
+    IdCategoria : 1,
   })
 
   function showModal () {
     loadCategories();
+    loadProveedor();
     setestadoModalAgregar({visible: true})
   };
+
+  async function loadProveedor() {
+
+    await Promise.all([
+      obtenerProveedorGet(),
+    ]).then(responses => {
+      setProveedor(responses[0].data)
+      console.log(responses[0].data);
+      //console.log(listaCategorias)
+    }).catch(error => message.error(error.toString()))
+
+  }
 
   async function loadCategories() {
 
@@ -154,6 +169,15 @@ function VentanaAgregarProductos(props){
             <Select onChange={handleChangeCategoria} style={{ width: 120 }} >
               {listaCategorias?.map(function(d, idx){
                 return (<Option key={d.IdCategoria} value={d.IdCategoria}>{d.NombreCategoria}</Option>)
+              })}
+            </Select>
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <p style={{fontSize: '12sp'}}> Proveedor  </p>
+            <Select style={{ width: 120 }} >
+              {listaProveedor?.map(function(d, idx){
+                return (<Option key={d.IdProveedor} value={d.IdProveedor}>{d.NombreProveedor}</Option>)
               })}
             </Select>
           </div>
