@@ -5,10 +5,13 @@ import {
   obtenerProductoGet, 
   obtenerProductoPorId, 
   obtenerCategoriasGet,
-  obtenerProveedoresGet 
+  obtenerProveedoresGet,
+  borrarProductoDelete,
+  editarProductoPut
 } from './Service';
 
 import VentanaAgregarProductos from './AgregarProducto';
+import openNotification from '../Extra/Notification';
 
 const layout={
   labelCol:{
@@ -21,6 +24,7 @@ const layout={
 
 const { Option } = Select;
 
+
 function Productos(){
   
   const [ productosTabla, setProductosTabla ] = useState([]);
@@ -30,6 +34,8 @@ function Productos(){
     categorias: undefined,
     proveedores: undefined
   });
+
+  const [tablaCargando , setTablaCargando ] = useState(false);
 
   const columns = [
     {
@@ -121,38 +127,94 @@ function Productos(){
             </Button>
           </Tooltip>
           <Tooltip title='Eliminar'>
-           <Button danger><DeleteOutlined /></Button>
+           <Button onClick={ async () => { borrarProducto(record) } } danger><DeleteOutlined /></Button>
           </Tooltip>
         </Space>
       ),
     },
   ];
 
-  const obtenerProductos = async() =>{
+
+  function borrarProducto (producto ) {
+    Modal.confirm({
+      title: 'Confirmación',
+     
+      content: '¿Estás seguro de borrar el producto ' + producto.NombreProducto ,
+      okText: 'Aceptar',
+      cancelText: 'Cancelar',
+      onOk: () => { borrarProductoDB(producto) } 
+    });
+  }
+
+  async function borrarProductoDB (producto) {
+
+    setTablaCargando(true);
+
+    await Promise.all([
+      borrarProductoDelete(producto.IdProducto)
+    ]).then(responses => {
+      setTablaCargando(false)
+      openNotification("Eliminado", "Producto eliminado correctamente", "success")
+      obtenerProductos();
+    }).catch(error => {
+      message.error(error.toString() )
+      openNotification("Eliminado Fallado", "El producto no fue borrado correctamente, intente nuevamente", "error")
+      setTablaCargando(false)
+    })
+
+  }
+
+  async function obtenerProductos () {
     try {
+      setTablaCargando(true);
       const response = await obtenerProductoGet();
       console.log(response);
-      if (response.data){
 
+      if (response.data){
         setProductosTabla(response.data)
+        setTablaCargando(false);
       }
     } catch (error) {
+      setTablaCargando(false);
       message.error(error.toString());
     }
   }
 
-  const formFinish = (values) =>{
+  async function formFinish (values) {
     console.log(values);
+
+    await Promise.all([
+      editarProductoPut ( estadoModalEditar.producto.IdProducto , values),
+    ]).then(responses => {
+
+      openNotification("Notificación", "Producto editado correctamente." , "success")
+
+      setestadoModalEditar({
+        visible: false, 
+        producto: undefined, 
+        categorias: undefined,
+        proveedores: undefined
+      })
+
+      obtenerProductos();
+      
+    }).catch(error => {
+      message.error(error.toString())
+      console.log(error.toString());
+      openNotification("Alerta", "Error editando el producto, revise la consola para más detalles", "error"  )
+    })
+
   }
 
   useEffect(() =>{
     obtenerProductos();
   },[])
 
+
   return(
     <div>
       <VentanaAgregarProductos actualizarProductos={obtenerProductos}> </VentanaAgregarProductos>
-      <Table rowKey="IdProducto" columns={columns} dataSource={productosTabla}/>
+      <Table loading={tablaCargando} rowKey="IdProducto" columns={columns} dataSource={productosTabla}/>
       <Modal
         visible={estadoModalEditar.visible}
         title="Editar Producto"
@@ -164,6 +226,7 @@ function Productos(){
         ]}
         >
         { estadoModalEditar.visible === true ? <Form 
+          //onFinish={onFinishEditForm}
           id="formularioProductoEditar"
           {...layout}
           onFinish={(values) => formFinish(values)}
@@ -225,6 +288,7 @@ function Productos(){
               })}
             </Select>
           </Form.Item>
+          {/*
           <Form.Item
             initialValue={estadoModalEditar.producto.ProveeProductos[0].Proveedor.IdProveedor}
             name="proveedor"
@@ -240,6 +304,7 @@ function Productos(){
               })}
             </Select>
           </Form.Item>
+          */}
 
           </Form> : <div>Cargando</div>}
       </Modal>

@@ -37,23 +37,33 @@ function VentanaAgregarCategoria(props){
 
 
   async function insertarCategoria () {
-    await Promise.all([
-      insertarCategoriaPost(valoresCategoriaNuevo),
-    ]).then(responses => {
-      
-      openNotification("Notificación", "Categoría agregada correctamente." , "success")
-      handleCancel();
-      //Reset default values
-      setValoresCategoriaNuevo({
-        NombreCategoria : "",
-      })
+    try {
+      const responses = await insertarCategoriaPost(valoresCategoriaNuevo);
 
-      props.actualizarCategorias();
-      
-    }).catch(error => {
+      if (responses) {
+
+        openNotification("Notificación", "Categoría agregada correctamente." , "success")
+        handleCancel();
+        //Reset default values
+        setValoresCategoriaNuevo({
+          NombreCategoria : "",
+        })
+  
+        await updateTableParent();
+
+      }
+
+
+
+    }catch (error) {
       message.error(error.toString())
       openNotification("Alerta", "Error insertando la Categoria, revise la consola para más detalles", "error"  )
-    })
+    }
+
+  }
+
+  async function updateTableParent() {
+    await props.actualizarCategorias();
   }
 
   function onChangeNombreCategoria (e) {
@@ -70,7 +80,6 @@ function VentanaAgregarCategoria(props){
         title="Agregar Nueva Categoría"
         visible={estadoModalAgregar.visible}
         onOk={handleOk}
-        width={1000}
         footer={null}
         maskClosable={false}
         onCancel={handleCancel}

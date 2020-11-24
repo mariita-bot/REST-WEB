@@ -5,7 +5,7 @@ import openNotification from '../Extra/Notification';
 
 
 import { 
-  insertarCategoriaPost,
+  insertarProveedorPost,
 } from './Service';
 
 const { Option } = Select;
@@ -40,17 +40,17 @@ function VentanaAgregarProveedor(props){
 
   async function insertarProveedor () {
     await Promise.all([
-      insertarProveedorPost(valoresCategoriaNuevo),
+      insertarProveedorPost(valoresProveedorNuevo),
     ]).then(responses => {
       
       openNotification("Notificación", "Proveedor agregado correctamente." , "success")
       handleCancel();
       //Reset default values
-      setValoresCategoriaNuevo({
+      setValoresProveedorNuevo({
         NombreCategoria : "",
       })
 
-      props.actualizarCategorias();
+      props.actualizarProveedor();
       
     }).catch(error => {
       message.error(error.toString())
@@ -59,7 +59,15 @@ function VentanaAgregarProveedor(props){
   }
 
   function onChangeNombreProveedor (e) {
-    setValoresCategoriaNuevo(prevState => ({...prevState, NombreProveedor: e.target.value}))
+    setValoresProveedorNuevo(prevState => ({...prevState, NombreProveedor: e.target.value}))
+  }
+
+  function onChangeDireccionProveedor (e) {
+    setValoresProveedorNuevo(prevState => ({...prevState, Direccion: e.target.value}))
+  }
+
+  function onChangeTelefonoProveedor (e) {
+    setValoresProveedorNuevo(prevState => ({...prevState, Telefono: e.target.value}))
   }
 
   return (
@@ -82,10 +90,20 @@ function VentanaAgregarProveedor(props){
             <p style={{fontSize: '12sp'}}> Nombre Proveedor </p>
             <Input value={valoresProveedorNuevo.NombreProveedor} onChange={onChangeNombreProveedor}  />
           </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <p style={{fontSize: '12sp'}}> Dirección del Proveedor </p>
+            <Input value={valoresProveedorNuevo.Direccion} onChange={onChangeDireccionProveedor}  />
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <p style={{fontSize: '12sp'}}> Teléfono </p>
+            <Input value={valoresProveedorNuevo.Telefono} onChange={onChangeTelefonoProveedor}  />
+          </div>
      
         
           <center>
-            <Button type="primary" onClick={insertarCategoria}>Agregar</Button>
+            <Button type="primary" onClick={insertarProveedor}>Agregar</Button>
           </center>
         </div>
 
@@ -94,4 +112,4 @@ function VentanaAgregarProveedor(props){
   );
 }
 
-export default VentanaAgregarCategoria;
+export default VentanaAgregarProveedor;

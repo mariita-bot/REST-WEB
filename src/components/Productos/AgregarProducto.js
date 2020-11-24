@@ -71,9 +71,11 @@ function VentanaAgregarProductos(props){
     await Promise.all([
       insertarProductoPost(valoresProductoNuevo),
     ]).then(responses => {
+
+
       
       openNotification("Notificación", "Producto agregado correctamente." , "success")
-      handleCancel();
+
       //Reset default values
       setValoresProductoNuevo({
         NombreProducto : "",
@@ -84,12 +86,17 @@ function VentanaAgregarProductos(props){
         IdCategoria : 1
       })
 
-      props.actualizarProductos();
+      updateTableParent();
+      handleCancel();
       
     }).catch(error => {
       message.error(error.toString())
       openNotification("Alerta", "Error insertando el producto, revise la consola para más detalles", "error"  )
     })
+  }
+
+  async function updateTableParent() {
+    await props.actualizarProductos();
   }
 
   function onChangeNombreProducto (e) {

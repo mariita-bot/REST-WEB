@@ -12,9 +12,12 @@ import {
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { 
   obtenerCategoriaPorId, 
-  obtenerCategoriaGet
+  obtenerCategoriaGet,
+  borrarCategoriaDelete,
+  editarCategoriaPut
 } from './Service';
 
+import openNotification from '../Extra/Notification';
 import VentanaAgregarCategoria from './AgregarCategoria';
 
 const layout={
@@ -64,6 +67,7 @@ function Categoria(){
                     visible: true,
                     categoria: responses[0].data
                   })
+                  //console.log(responses[0].data)
                 }).catch(error => message.error(error.toString()))
               }}
             >
@@ -71,20 +75,55 @@ function Categoria(){
             </Button>
           </Tooltip>
           <Tooltip title='Eliminar'>
-           <Button danger><DeleteOutlined /></Button>
+            <Button onClick={ async () => { borrarCategoria(record) } } danger><DeleteOutlined /></Button>
           </Tooltip>
         </Space>
       ),
     },
   ];
 
+
+  function borrarCategoria ( categoria ) {
+    Modal.confirm({
+      title: 'Confirmación',
+     
+      content: '¿Estás seguro de borrar la categoria ' + categoria.NombreCategoria ,
+      okText: 'Aceptar',
+      cancelText: 'Cancelar',
+      onOk: () => { borrarCategoriaDB(categoria) } 
+    });
+  }
+
+  async function borrarCategoriaDB (categoria) {
+
+    setTablaCargando(true);
+
+    await Promise.all([
+      borrarCategoriaDelete (categoria.IdCategoria)
+    ]).then(responses => {
+      setTablaCargando(false)
+      openNotification("Eliminado", "Categoria eliminada correctamente", "success")
+      obtenerCategorias();
+    }).catch(error => {
+      message.error(error.toString() )
+      openNotification("Eliminado Fallado", "La categoría no fue borrada correctamente, intente nuevamente", "error")
+      setTablaCargando(false)
+    })
+
+  }
+
   const obtenerCategorias = async() =>{
-    setTablaCargando (true);
+    //console.log("im here");
     try {
+      setTablaCargando (true);
       const response = await obtenerCategoriaGet();
+
       if (response.data){
-        setTablaCargando(false);
+
+        console.log(response.data);
+
         setCategoriaTabla(response.data)
+        setTablaCargando(false);
       }
     } catch (error) {
       setTablaCargando(false);
@@ -93,8 +132,31 @@ function Categoria(){
     }
   }
 
-  const formFinish = (values) =>{
+  async function formFinish (values) {
     console.log(values);
+
+    await Promise.all([
+      editarCategoriaPut ( estadoModalEditar.categoria.IdCategoria , values),
+    ]).then(responses => {
+
+      console.log(responses);
+
+      openNotification("Notificación", "Categoria editada correctamente." , "success")
+
+      setEstadoModalEditar({
+        visible: false, 
+        categoria: undefined,
+      })
+
+      obtenerCategorias();
+      
+    }).catch(error => {
+      message.error(error.toString())
+      console.log(error.toString());
+      openNotification("Alerta", "Error editando la Categoria, revise la consola para más detalles", "error"  )
+    })
+
+
   }
 
   useEffect(() =>{
@@ -112,7 +174,7 @@ function Categoria(){
       onCancel={() => setEstadoModalEditar({visible: false, categoria: null})}
       footer={[
         <Button key='1'>Cancelar</Button>,
-        <Button key='2' type='primary' htmlType="formularioCategoriaEditar">Guardar</Button>
+        <Button key='2' type='primary' htmlType="submit" form="formularioCategoriaEditar">Guardar</Button>
       ]}
     >
     { estadoModalEditar.visible === true ? <Form 
@@ -121,7 +183,7 @@ function Categoria(){
       onFinish={(values) => formFinish(values)}
     >
       <Form.Item
-        inicalValue = {setEstadoModalEditar.categoria} 
+        initialValue = {estadoModalEditar.categoria?.NombreCategoria} 
         name="NombreCategoria"
         label="Nombre de la categoria"
         required tooltip="Este es un campo requerido"

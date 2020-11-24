@@ -22,6 +22,10 @@ export function insertarProductoPost(Producto) {
   return Axios.post(`${baseUrl}/producto`,Producto )
 }
 
-export function editarProductoPut() {
-//
+export function editarProductoPut(IdProducto, Producto) {
+  return Axios.put(`${baseUrl}/producto/${IdProducto}` ,Producto )
+}
+
+export function borrarProductoDelete (IdProducto) {
+  return Axios.delete(`${baseUrl}/producto/${IdProducto}`);
 }
