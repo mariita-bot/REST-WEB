@@ -12,6 +12,7 @@ import {
 
 import VentanaAgregarProductos from './AgregarProducto';
 import openNotification from '../Extra/Notification';
+import VentanaAgregarStock from './AgregarStock';
 
 const layout={
   labelCol:{
@@ -214,6 +215,7 @@ function Productos(){
   return(
     <div>
       <VentanaAgregarProductos actualizarProductos={obtenerProductos}> </VentanaAgregarProductos>
+      <VentanaAgregarStock> </VentanaAgregarStock>
       <Table loading={tablaCargando} rowKey="IdProducto" columns={columns} dataSource={productosTabla}/>
       <Modal
         visible={estadoModalEditar.visible}

@@ -33,3 +33,7 @@ export function borrarProductoDelete (IdProducto) {
 export function obtenerProveedorGet () {
   return Axios.get(`${baseUrl}/proveedor`);
 }
+
+export function insertarStockProducto (Producto) {
+  return Axios.post(`${baseUrl}/proveeproducto`,Producto )
+}
