@@ -132,7 +132,7 @@ function VentanaAgregarProductos(props){
         title="Agregar Nuevo Producto"
         visible={estadoModalAgregar.visible}
         onOk={handleOk}
-        width={1000}
+        // width={1000}
         footer={null}
         maskClosable={false}
         onCancel={handleCancel}
@@ -156,7 +156,7 @@ function VentanaAgregarProductos(props){
               </div>
             </Col>
             <Col span={4}>
-              <div style={{ marginBottom: 16 }}>
+              <div style={{ marginLeft: 16}}>
                 <p style={{fontSize: '12sp'}}> Tamaño  </p>
                 <InputNumber min={1} value={valoresProductoNuevo.Tamanio} onChange={onChangeTamañoProducto} />
               </div>
@@ -173,14 +173,14 @@ function VentanaAgregarProductos(props){
             </Select>
           </div>
 
-          <div style={{ marginBottom: 16 }}>
+          {/* <div style={{ marginBottom: 16 }}>
             <p style={{fontSize: '12sp'}}> Proveedor  </p>
             <Select style={{ width: 120 }} >
               {listaProveedor?.map(function(d, idx){
                 return (<Option key={d.IdProveedor} value={d.IdProveedor}>{d.NombreProveedor}</Option>)
               })}
             </Select>
-          </div>
+          </div> */}
 
           <center>
             <Button type="primary" onClick={insertarProducto}>Agregar</Button>

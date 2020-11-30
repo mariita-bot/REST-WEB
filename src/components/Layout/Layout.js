@@ -89,11 +89,11 @@ function MainLayout(props) {
               Categoria
             </Link>
           </Menu.Item>
-          <Menu.Item key="6" icon={<UserOutlined />}>
+          {/* <Menu.Item key="6" icon={<UserOutlined />}>
             <Link to="/dashboard/mesero" style={{ padding: 5 }}>
               Mesero
             </Link>
-          </Menu.Item>
+          </Menu.Item> */}
           <Menu.Item key="7" icon={<VideoCameraOutlined />}>
             <Link to="/dashboard/ventas" style={{ padding: 5 }}>
               Ventas

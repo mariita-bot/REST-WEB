@@ -214,8 +214,8 @@ function Productos(){
 
   return(
     <div>
-      <VentanaAgregarProductos actualizarProductos={obtenerProductos}> </VentanaAgregarProductos>
-      <VentanaAgregarStock> </VentanaAgregarStock>
+      <VentanaAgregarProductos actualizarProductos={obtenerProductos}> </VentanaAgregarProductos> <br />
+  <VentanaAgregarStock />
       <Table loading={tablaCargando} rowKey="IdProducto" columns={columns} dataSource={productosTabla}/>
       <Modal
         visible={estadoModalEditar.visible}
